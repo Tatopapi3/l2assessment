@@ -1,43 +1,28 @@
 /**
- * Recommendation Templates - Maps categories to recommended actions
+ * Recommendation Templates - Maps categories and urgency to recommended actions
  */
 
 const actionTemplates = {
-  "Billing Issue": "Ask user to check billing portal.",
-  "Technical Problem": "Suggest user to restart their browser.",
-  "General Inquiry": "Respond with FAQ link.",
-  "Feature Request": "Ask user to check billing portal.",
-  "Unknown": "Review manually."
+  "Billing Issue": "Route to the billing team. Ask the customer to provide their account email and a description of the charge in question. Check the billing portal for recent transactions.",
+  "Technical Problem": "Route to technical support. Ask the customer for steps to reproduce the issue, their browser/OS version, and any error messages. Check the status page for known outages.",
+  "Feature Request": "Thank the customer for their feedback. Log the request in the product feedback tracker. Let them know the team reviews all suggestions.",
+  "General Inquiry": "Respond with relevant FAQ links. If the question isn't covered, escalate to a support agent for a personalized response.",
+  "Unknown": "Flag for manual review by a senior support agent."
 }
 
-/**
- * Get recommended action for a given category
- * 
- * @param {string} category - The message category
- * @param {string} urgency - The urgency level
- * @returns {string} - Recommended next step
- */
 export function getRecommendedAction(category, urgency) {
-  return actionTemplates[category] || "No recommendation available."
+  return actionTemplates[category] || "No recommendation available. Please review manually."
 }
 
-/**
- * Get all available categories
- * 
- * @returns {string[]} - List of categories
- */
 export function getAvailableCategories() {
   return Object.keys(actionTemplates)
 }
 
 /**
- * Determines if message should be escalated
- * 
- * @param {string} category - The message category
- * @param {string} urgency - The urgency level
- * @param {string} message - The original message
- * @returns {boolean} - Whether to escalate
+ * Escalate if High urgency + Technical or Billing issue, or any critical keyword
  */
 export function shouldEscalate(category, urgency, message) {
-  return message.length > 100
+  if (urgency === 'High' && (category === 'Technical Problem' || category === 'Billing Issue')) return true
+  const criticalKeywords = ['emergency', 'security', 'data loss', 'lost data', 'hacked', 'breach']
+  return criticalKeywords.some(kw => message.toLowerCase().includes(kw))
 }
